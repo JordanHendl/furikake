@@ -1,6 +1,7 @@
 pub mod error;
 pub mod reservations;
 pub mod resolver;
+pub mod recipe;
 pub mod types;
 
 use dashi::{BindGroupVariableType, Context};
