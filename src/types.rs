@@ -1,4 +1,4 @@
-use glam::{Mat4, Vec3, Quat};
+use glam::{Mat4, Quat, Vec3};
 
 #[repr(C)]
 pub struct Camera {
@@ -50,4 +50,3 @@ impl Camera {
         self.rotation * Vec3::Y
     }
 }
-

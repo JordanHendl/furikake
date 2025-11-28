@@ -1,13 +1,8 @@
-use std::time::Instant;
-pub mod timing;
 pub mod camera;
+pub mod timing;
 pub use timing::*;
-pub use camera::*;
 
-use dashi::{
-    BindGroupVariable, BindingInfo, Buffer, BufferView, Context, Handle, IndexedBindingInfo,
-    ShaderResource,
-};
+use dashi::{BindingInfo, Context, IndexedBindingInfo};
 
 pub enum ReservedBinding<'a> {
     Binding(BindingInfo),
@@ -16,7 +11,6 @@ pub enum ReservedBinding<'a> {
 
 pub trait ReservedItem {
     fn name(&self) -> String;
-    fn update(&mut self, ctx: &mut Context);
+    fn update(&mut self, ctx: &mut Context) -> Result<(), crate::error::FurikakeError>;
     fn binding(&self) -> ReservedBinding<'_>;
 }
-

@@ -21,13 +21,21 @@ fn main() {
         max_perf,
         glsl
     };
-    
+
     let res = bento::CompilationResult {
         name: None,
         file: None,
         lang: bento::ShaderLang::Glsl,
         stage: dashi::ShaderType::Vertex,
-        variables: vec![],
+        variables: vec![bento::ShaderVariable {
+            name: "meshi_timing".to_string(),
+            set: 0,
+            kind: dashi::BindGroupVariable {
+                var_type: dashi::BindGroupVariableType::Uniform,
+                binding: 0,
+                count: 1,
+            },
+        }],
         metadata: ShaderMetadata {
             entry_points: todo!(),
             inputs: todo!(),
@@ -38,10 +46,10 @@ fn main() {
     };
     let mut ctx = Context::new(&Default::default()).expect("Unable to make dashi context");
     let state = DefaultState::new(&mut ctx);
-    let resolver = Resolver::new(&state, &res);
+    let resolver = Resolver::new(&state, &res).expect("Unable to create resolver");
 
     let results = resolver.resolved();
     assert!(results.len() == 1);
-    
-    println!("Result: {:?}", results[0]); 
+
+    println!("Result: {:?}", results[0]);
 }

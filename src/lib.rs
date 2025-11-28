@@ -3,7 +3,6 @@ pub mod reservations;
 pub mod resolver;
 pub mod types;
 
-
 use dashi::{BindGroupVariableType, Context};
 use error::FurikakeError;
 use reservations::{ReservedItem, ReservedTiming};
@@ -71,14 +70,17 @@ impl DefaultState {
             return Ok(b.as_ref());
         }
 
-        Err(FurikakeError {})
+        Err(FurikakeError::MissingReservedBinding {
+            name: key.to_string(),
+        })
     }
 
-    pub fn update(&mut self) {
+    pub fn update(&mut self) -> Result<(), FurikakeError> {
         let ctx: &mut Context = unsafe { self.ctx.as_mut() };
         for iter in &mut self.reserved {
-            iter.1.update(ctx);
+            iter.1.update(ctx)?;
         }
+        Ok(())
     }
 }
 
@@ -102,7 +104,6 @@ impl GPUState for BindlessState {
     fn reserved_metadata() -> &'static [ReservedMetadata] {
         BINDLESS_METADATA.as_slice()
     }
-
 }
 
 impl BindlessState {
@@ -117,19 +118,22 @@ impl BindlessState {
             ctx: NonNull::from_ref(ctx),
         }
     }
-    
+
     pub fn binding(&self, key: &str) -> Result<&dyn ReservedItem, FurikakeError> {
         if let Some(b) = self.reserved.get(key) {
             return Ok(b.as_ref());
         }
 
-        Err(FurikakeError {})
+        Err(FurikakeError::MissingReservedBinding {
+            name: key.to_string(),
+        })
     }
 
-    pub fn update(&mut self) {
+    pub fn update(&mut self) -> Result<(), FurikakeError> {
         let ctx: &mut Context = unsafe { self.ctx.as_mut() };
         for iter in &mut self.reserved {
-            iter.1.update(ctx);
+            iter.1.update(ctx)?;
         }
+        Ok(())
     }
 }
