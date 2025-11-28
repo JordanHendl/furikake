@@ -1,6 +1,5 @@
 use dashi::{
-    BindGroupVariable, BindGroupVariableType, BindingInfo, Buffer, BufferInfo, BufferView, Context,
-    Handle, IndexedBindingInfo, MemoryVisibility, ShaderResource,
+    BindingInfo, Buffer, BufferInfo, BufferView, Context, Handle, MemoryVisibility, ShaderResource,
 };
 use std::time::Instant;
 
@@ -39,16 +38,18 @@ impl ReservedItem for ReservedTiming {
         "meshi_timing".to_string()
     }
 
-    fn update(&mut self, ctx: &mut Context) {
+    fn update(&mut self, ctx: &mut Context) -> Result<(), crate::error::FurikakeError> {
         let s = ctx
             .map_buffer_mut::<TimeData>(self.buffer)
-            .expect("Unable to map time buffer!");
+            .map_err(crate::error::FurikakeError::buffer_map_failed)?;
         let now = std::time::Instant::now();
         s[0].current_time_ms = now.elapsed().as_secs_f32() * 1000.0;
         s[0].frame_time_ms = (now - self.last_time).as_secs_f32() * 1000.0;
         self.last_time = now;
         ctx.unmap_buffer(self.buffer)
-            .expect("Unable to unmap time buffer!");
+            .map_err(crate::error::FurikakeError::buffer_unmap_failed)?;
+
+        Ok(())
     }
 
     fn binding(&self) -> ReservedBinding<'_> {

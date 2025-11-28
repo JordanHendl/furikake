@@ -1,8 +1,4 @@
-use dashi::{
-    BindGroupVariable, BindingInfo, Buffer, BufferView, Context, Handle, IndexedBindingInfo,
-    ShaderResource,
-};
-use std::time::Instant;
+use dashi::{BindGroupVariable, BindingInfo, Buffer, BufferView, Context, Handle, ShaderResource};
 
 use crate::types::Camera;
 
@@ -20,7 +16,7 @@ struct Data {
 }
 
 impl ReservedCamera {
-    pub fn new(ctx: &mut Context) -> Self {
+    pub fn new(_ctx: &mut Context) -> Self {
         todo!()
     }
 
@@ -38,16 +34,18 @@ impl ReservedItem for ReservedCamera {
         "meshi_camera".to_string()
     }
 
-    fn update(&mut self, ctx: &mut Context) {
+    fn update(&mut self, ctx: &mut Context) -> Result<(), crate::error::FurikakeError> {
         let s = ctx
             .map_buffer_mut::<Data>(self.buffer)
-            .expect("Unable to map time buffer!");
+            .map_err(crate::error::FurikakeError::buffer_map_failed)?;
         // update transform
-        
+
         s[0].transform = self.camera.view_matrix();
 
         ctx.unmap_buffer(self.buffer)
-            .expect("Unable to unmap time buffer!");
+            .map_err(crate::error::FurikakeError::buffer_unmap_failed)?;
+
+        Ok(())
     }
 
     fn binding(&self) -> ReservedBinding<'_> {
@@ -60,5 +58,4 @@ impl ReservedItem for ReservedCamera {
             binding: 0,
         });
     }
-
 }
