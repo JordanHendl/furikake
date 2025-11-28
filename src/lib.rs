@@ -1,7 +1,7 @@
 pub mod error;
+pub mod recipe;
 pub mod reservations;
 pub mod resolver;
-pub mod recipe;
 pub mod types;
 
 use dashi::{BindGroupVariableType, Context};
@@ -19,6 +19,7 @@ pub struct ReservedMetadata {
 pub trait GPUState {
     fn reserved_names() -> &'static [&'static str];
     fn reserved_metadata() -> &'static [ReservedMetadata];
+    fn binding(&self, key: &str) -> Result<&dyn ReservedItem, FurikakeError>;
 }
 
 pub struct DefaultState {
@@ -50,6 +51,10 @@ impl GPUState for DefaultState {
 
     fn reserved_metadata() -> &'static [ReservedMetadata] {
         DEFAULT_METADATA.as_slice()
+    }
+
+    fn binding(&self, key: &str) -> Result<&dyn ReservedItem, FurikakeError> {
+        <DefaultState>::binding(self, key)
     }
 }
 
@@ -104,6 +109,10 @@ impl GPUState for BindlessState {
 
     fn reserved_metadata() -> &'static [ReservedMetadata] {
         BINDLESS_METADATA.as_slice()
+    }
+
+    fn binding(&self, key: &str) -> Result<&dyn ReservedItem, FurikakeError> {
+        <BindlessState>::binding(self, key)
     }
 }
 
