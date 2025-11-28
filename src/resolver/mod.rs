@@ -81,6 +81,15 @@ mod tests {
                 kind: BindGroupVariableType::Uniform,
             }]
         }
+
+        fn binding(
+            &self,
+            key: &str,
+        ) -> Result<&dyn crate::reservations::ReservedItem, crate::error::FurikakeError> {
+            Err(crate::error::FurikakeError::MissingReservedBinding {
+                name: key.to_string(),
+            })
+        }
     }
 
     fn make_result(variables: Vec<bento::ShaderVariable>) -> bento::CompilationResult {
