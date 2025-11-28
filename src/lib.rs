@@ -117,7 +117,7 @@ impl BindlessState {
             ctx: NonNull::from_ref(ctx),
         }
     }
-
+    
     pub fn binding(&self, key: &str) -> Result<&dyn ReservedItem, FurikakeError> {
         if let Some(b) = self.reserved.get(key) {
             return Ok(b.as_ref());

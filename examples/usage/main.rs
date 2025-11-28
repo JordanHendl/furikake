@@ -1,3 +1,4 @@
+use bento::ShaderMetadata;
 use dashi::*;
 use furikake::*;
 use inline_spirv::*;
@@ -20,10 +21,24 @@ fn main() {
         max_perf,
         glsl
     };
-
+    
+    let res = bento::CompilationResult {
+        name: None,
+        file: None,
+        lang: bento::ShaderLang::Glsl,
+        stage: dashi::ShaderType::Vertex,
+        variables: vec![],
+        metadata: ShaderMetadata {
+            entry_points: todo!(),
+            inputs: todo!(),
+            outputs: todo!(),
+            workgroup_size: todo!(),
+        },
+        spirv: vert_shader_spirv.to_vec(),
+    };
     let mut ctx = Context::new(&Default::default()).expect("Unable to make dashi context");
     let state = DefaultState::new(&mut ctx);
-    let resolver = Resolver::new_spirv_u32(&state, vert_shader_spirv);
+    let resolver = Resolver::new(&state, &res);
 
     let results = resolver.resolved();
     assert!(results.len() == 1);
