@@ -1,10 +1,8 @@
-use dashi::{
-    BindGroupVariable, BindGroupVariableType, BindingInfo, Buffer, BufferInfo, BufferView, Context,
-    Handle, IndexedBindingInfo, MemoryVisibility, ShaderResource,
-};
+use dashi::{Buffer, BufferInfo, BufferView, Context, Handle, MemoryVisibility, ShaderResource};
 use std::time::Instant;
 
 use super::{ReservedBinding, ReservedItem};
+use crate::resolver::helpers;
 #[repr(C)]
 struct TimeData {
     current_time_ms: f32,
@@ -52,13 +50,13 @@ impl ReservedItem for ReservedTiming {
     }
 
     fn binding(&self) -> ReservedBinding<'_> {
-        return ReservedBinding::Binding(BindingInfo {
-            resource: ShaderResource::ConstBuffer(BufferView {
+        ReservedBinding::Binding(helpers::bind_group_binding(
+            ShaderResource::ConstBuffer(BufferView {
                 handle: self.buffer,
                 size: (std::mem::size_of::<f32>() * 2) as u64,
                 offset: 0,
             }),
-            binding: 0,
-        });
+            0,
+        ))
     }
 }

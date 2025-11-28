@@ -1,13 +1,8 @@
-use std::time::Instant;
-pub mod timing;
 pub mod camera;
+pub mod timing;
 pub use timing::*;
-pub use camera::*;
 
-use dashi::{
-    BindGroupVariable, BindingInfo, Buffer, BufferView, Context, Handle, IndexedBindingInfo,
-    ShaderResource,
-};
+use dashi::{BindingInfo, Context, IndexedBindingInfo};
 
 pub enum ReservedBinding<'a> {
     Binding(BindingInfo),
@@ -19,4 +14,3 @@ pub trait ReservedItem {
     fn update(&mut self, ctx: &mut Context);
     fn binding(&self) -> ReservedBinding<'_>;
 }
-

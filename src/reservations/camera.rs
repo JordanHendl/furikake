@@ -1,13 +1,11 @@
-use dashi::{
-    BindGroupVariable, BindingInfo, Buffer, BufferView, Context, Handle, IndexedBindingInfo,
-    ShaderResource,
-};
-use std::time::Instant;
+use dashi::{BindGroupVariable, Buffer, BufferView, Context, Handle, ShaderResource};
 
 use crate::types::Camera;
 
 use super::{ReservedBinding, ReservedItem};
+use crate::resolver::helpers;
 
+#[allow(dead_code)]
 pub(crate) struct ReservedCamera {
     camera: Camera,
     buffer: Handle<Buffer>,
@@ -15,12 +13,14 @@ pub(crate) struct ReservedCamera {
 }
 
 #[repr(C)]
+#[allow(dead_code)]
 struct Data {
     transform: glam::Mat4,
 }
 
+#[allow(dead_code)]
 impl ReservedCamera {
-    pub fn new(ctx: &mut Context) -> Self {
+    pub fn new(_ctx: &mut Context) -> Self {
         todo!()
     }
 
@@ -43,7 +43,7 @@ impl ReservedItem for ReservedCamera {
             .map_buffer_mut::<Data>(self.buffer)
             .expect("Unable to map time buffer!");
         // update transform
-        
+
         s[0].transform = self.camera.view_matrix();
 
         ctx.unmap_buffer(self.buffer)
@@ -51,14 +51,13 @@ impl ReservedItem for ReservedCamera {
     }
 
     fn binding(&self) -> ReservedBinding<'_> {
-        return ReservedBinding::Binding(BindingInfo {
-            resource: ShaderResource::ConstBuffer(BufferView {
+        ReservedBinding::Binding(helpers::bind_group_binding(
+            ShaderResource::ConstBuffer(BufferView {
                 handle: self.buffer,
                 size: (std::mem::size_of::<Data>()) as u64,
                 offset: 0,
             }),
-            binding: 0,
-        });
+            0,
+        ))
     }
-
 }

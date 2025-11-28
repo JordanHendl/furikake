@@ -1,7 +1,6 @@
 use crate::{GPUState, ReservedMetadata};
-use std::collections::HashMap;
 
-use dashi::BindGroupVariableType;
+pub mod helpers;
 
 #[derive(Default, Debug)]
 pub struct ResolveResult {
@@ -15,7 +14,7 @@ pub struct Resolver {
     resolved: Vec<ResolveResult>,
 }
 impl Resolver {
-    pub fn new<T: GPUState>(state: &T, result: &bento::CompilationResult) -> Self {
+    pub fn new<T: GPUState>(_state: &T, result: &bento::CompilationResult) -> Self {
         let names = T::reserved_metadata();
 
         Self {
