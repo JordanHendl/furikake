@@ -7,8 +7,8 @@ use dashi::BindGroupVariableType;
 pub struct ResolveResult {
     pub name: String,
     pub exists: bool,
-    pub binding: dashi::BindGroupVariable,
-    pub set: u32,
+    pub binding: Option<dashi::BindGroupVariable>,
+    pub set: Option<u32>,
 }
 
 #[derive(Debug)]
@@ -50,12 +50,15 @@ impl Resolver {
                 results.push(ResolveResult {
                     name: found.name.clone(),
                     exists: true,
-                    binding: found.kind.clone(),
-                    set: found.set,
+                    binding: Some(found.kind.clone()),
+                    set: Some(found.set),
                 });
             } else {
-                return Err(crate::error::FurikakeError::MissingReservedBinding {
+                results.push(ResolveResult {
                     name: meta.name.to_string(),
+                    exists: false,
+                    binding: None,
+                    set: None,
                 });
             }
         }
@@ -110,16 +113,16 @@ mod tests {
     }
 
     #[test]
-    fn reports_missing_reserved_binding() {
+    fn allows_missing_reserved_binding() {
         let res = make_result(vec![]);
-        let err = Resolver::new(&TestState, &res).unwrap_err();
+        let result = Resolver::new(&TestState, &res).expect("resolver result");
 
-        match err {
-            FurikakeError::MissingReservedBinding { name } => {
-                assert_eq!(name, "meshi_timing");
-            }
-            other => panic!("unexpected error {other:?}", other = other),
-        }
+        assert_eq!(result.resolved.len(), 1);
+        let resolved = &result.resolved[0];
+        assert_eq!(resolved.name, "meshi_timing");
+        assert!(!resolved.exists);
+        assert!(resolved.binding.is_none());
+        assert!(resolved.set.is_none());
     }
 
     #[test]
