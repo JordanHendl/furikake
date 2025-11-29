@@ -3,6 +3,7 @@ pub mod timing;
 pub use timing::*;
 
 use dashi::{BindingInfo, Context, IndexedBindingInfo};
+use std::any::Any;
 
 pub enum ReservedBinding<'a> {
     Binding(BindingInfo),
@@ -13,4 +14,7 @@ pub trait ReservedItem {
     fn name(&self) -> String;
     fn update(&mut self, ctx: &mut Context) -> Result<(), crate::error::FurikakeError>;
     fn binding(&self) -> ReservedBinding<'_>;
+
+    fn as_any(&self) -> &dyn Any;
+    fn as_any_mut(&mut self) -> &mut dyn Any;
 }

@@ -7,6 +7,7 @@ pub enum FurikakeError {
     BufferMapFailed { source: GPUError },
     BufferUnmapFailed { source: GPUError },
     MissingReservedBinding { name: String },
+    ReservedItemTypeMismatch { name: String },
     ResolverReflection { source: String },
 }
 
@@ -32,6 +33,9 @@ impl fmt::Display for FurikakeError {
             FurikakeError::MissingReservedBinding { name } => {
                 write!(f, "reserved binding `{}` not found", name)
             }
+            FurikakeError::ReservedItemTypeMismatch { name } => {
+                write!(f, "reserved binding `{}` had the wrong type", name)
+            }
             FurikakeError::ResolverReflection { source } => {
                 write!(f, "failed to reflect resolver bindings: {}", source)
             }
@@ -45,7 +49,8 @@ impl Error for FurikakeError {
             FurikakeError::BufferMapFailed { source }
             | FurikakeError::BufferUnmapFailed { source } => Some(source),
             FurikakeError::ResolverReflection { .. }
-            | FurikakeError::MissingReservedBinding { .. } => None,
+            | FurikakeError::MissingReservedBinding { .. }
+            | FurikakeError::ReservedItemTypeMismatch { .. } => None,
         }
     }
 }
@@ -96,6 +101,18 @@ mod tests {
         assert_eq!(
             format!("{}", missing),
             "reserved binding `meshi_camera` not found"
+        );
+    }
+
+    #[test]
+    fn displays_mismatched_binding_type() {
+        let mismatched = FurikakeError::ReservedItemTypeMismatch {
+            name: "meshi_camera".to_string(),
+        };
+
+        assert_eq!(
+            format!("{}", mismatched),
+            "reserved binding `meshi_camera` had the wrong type"
         );
     }
 }

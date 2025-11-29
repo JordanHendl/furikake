@@ -32,6 +32,64 @@ pub struct BindlessState {
     reserved: HashMap<String, Box<dyn ReservedItem>>,
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::reservations::ReservedTiming;
+    use dashi::{ContextInfo, MemoryVisibility};
+    use std::time::{Duration, Instant};
+
+    #[repr(C)]
+    struct TimingData {
+        current_time_ms: f32,
+        frame_time_ms: f32,
+    }
+
+    #[test]
+    fn mutates_reserved_bindings_at_runtime() {
+        let mut ctx = Context::headless(&ContextInfo::default()).expect("create context");
+        let mut state = BindlessState::new(&mut ctx);
+
+        state.update().expect("initial update");
+
+        state
+            .reserved_mut::<ReservedTiming, _>("meshi_timing", |timing| {
+                timing.set_last_time(Instant::now() - Duration::from_millis(1200));
+            })
+            .expect("mutate timing");
+
+        state.update().expect("update mutated timing");
+
+        let timing = state
+            .reserved::<ReservedTiming>("meshi_timing")
+            .expect("timing reference");
+
+        let mapped = ctx
+            .map_buffer::<TimingData>(timing.buffer())
+            .expect("map timing buffer");
+
+        // Allow some wiggle room for the time spent running the test.
+        assert!(mapped[0].frame_time_ms >= 1000.0);
+        ctx.unmap_buffer(timing.buffer())
+            .expect("unmap timing buffer after mutation");
+    }
+
+    #[test]
+    fn errors_on_type_mismatch() {
+        let mut ctx = Context::headless(&ContextInfo::default()).expect("create context");
+        let mut state = BindlessState::new(&mut ctx);
+
+        let result = state.reserved_mut::<MemoryVisibility, _>("meshi_timing", |_| {});
+
+        match result {
+            Err(FurikakeError::ReservedItemTypeMismatch { name }) => {
+                assert_eq!(name, "meshi_timing")
+            }
+            other => panic!("expected type mismatch error, got {other:?}"),
+        }
+    }
+}
+
 ///////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////
@@ -87,6 +145,43 @@ impl DefaultState {
             iter.1.update(ctx)?;
         }
         Ok(())
+    }
+
+    pub fn reserved_mut<T: 'static, F: FnOnce(&mut T)>(
+        &mut self,
+        key: &str,
+        mutate: F,
+    ) -> Result<(), FurikakeError> {
+        let item = self
+            .reserved
+            .get_mut(key)
+            .ok_or(FurikakeError::MissingReservedBinding {
+                name: key.to_string(),
+            })?;
+
+        let typed = item.as_any_mut().downcast_mut::<T>().ok_or(
+            FurikakeError::ReservedItemTypeMismatch {
+                name: key.to_string(),
+            },
+        )?;
+
+        mutate(typed);
+        Ok(())
+    }
+
+    pub fn reserved<T: 'static>(&self, key: &str) -> Result<&T, FurikakeError> {
+        let item = self
+            .reserved
+            .get(key)
+            .ok_or(FurikakeError::MissingReservedBinding {
+                name: key.to_string(),
+            })?;
+
+        item.as_any()
+            .downcast_ref::<T>()
+            .ok_or(FurikakeError::ReservedItemTypeMismatch {
+                name: key.to_string(),
+            })
     }
 }
 
@@ -145,5 +240,42 @@ impl BindlessState {
             iter.1.update(ctx)?;
         }
         Ok(())
+    }
+
+    pub fn reserved_mut<T: 'static, F: FnOnce(&mut T)>(
+        &mut self,
+        key: &str,
+        mutate: F,
+    ) -> Result<(), FurikakeError> {
+        let item = self
+            .reserved
+            .get_mut(key)
+            .ok_or(FurikakeError::MissingReservedBinding {
+                name: key.to_string(),
+            })?;
+
+        let typed = item.as_any_mut().downcast_mut::<T>().ok_or(
+            FurikakeError::ReservedItemTypeMismatch {
+                name: key.to_string(),
+            },
+        )?;
+
+        mutate(typed);
+        Ok(())
+    }
+
+    pub fn reserved<T: 'static>(&self, key: &str) -> Result<&T, FurikakeError> {
+        let item = self
+            .reserved
+            .get(key)
+            .ok_or(FurikakeError::MissingReservedBinding {
+                name: key.to_string(),
+            })?;
+
+        item.as_any()
+            .downcast_ref::<T>()
+            .ok_or(FurikakeError::ReservedItemTypeMismatch {
+                name: key.to_string(),
+            })
     }
 }

@@ -31,6 +31,14 @@ impl ReservedTiming {
             buffer,
         }
     }
+
+    pub fn buffer(&self) -> Handle<Buffer> {
+        self.buffer
+    }
+
+    pub fn set_last_time(&mut self, instant: Instant) {
+        self.last_time = instant;
+    }
 }
 
 impl ReservedItem for ReservedTiming {
@@ -61,5 +69,13 @@ impl ReservedItem for ReservedTiming {
             }),
             binding: 0,
         });
+    }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+        self
     }
 }
