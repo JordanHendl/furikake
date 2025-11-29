@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use dashi::{BindGroupVariable, BindingInfo, Buffer, BufferView, Context, Handle, ShaderResource};
 
 use crate::types::Camera;

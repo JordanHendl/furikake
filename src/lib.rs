@@ -6,7 +6,11 @@ pub mod types;
 
 use dashi::{BindGroupVariableType, Context};
 use error::FurikakeError;
-use reservations::{ReservedItem, ReservedTiming};
+use reservations::{
+    ReservedItem, ReservedTiming, bindless_camera::ReservedBindlessCamera,
+    bindless_materials::ReservedBindlessMaterials, bindless_textures::ReservedBindlessTextures,
+    bindless_transformations::ReservedBindlessTransformations,
+};
 use std::{collections::HashMap, ptr::NonNull};
 
 pub use resolver::*;
@@ -191,11 +195,35 @@ impl DefaultState {
 ///////////////////////////////////////////////////////////
 ///
 
-const BINDLESS_STATE_NAMES: [&str; 1] = ["meshi_timing"];
-const BINDLESS_METADATA: [ReservedMetadata; 1] = [ReservedMetadata {
-    name: "meshi_timing",
-    kind: BindGroupVariableType::Uniform,
-}];
+const BINDLESS_STATE_NAMES: [&str; 5] = [
+    "meshi_timing",
+    "meshi_bindless_camera",
+    "meshi_bindless_textures",
+    "meshi_bindless_transformations",
+    "meshi_bindless_materials",
+];
+const BINDLESS_METADATA: [ReservedMetadata; 5] = [
+    ReservedMetadata {
+        name: "meshi_timing",
+        kind: BindGroupVariableType::Uniform,
+    },
+    ReservedMetadata {
+        name: "meshi_bindless_camera",
+        kind: BindGroupVariableType::Storage,
+    },
+    ReservedMetadata {
+        name: "meshi_bindless_textures",
+        kind: BindGroupVariableType::Storage,
+    },
+    ReservedMetadata {
+        name: "meshi_bindless_transformations",
+        kind: BindGroupVariableType::Storage,
+    },
+    ReservedMetadata {
+        name: "meshi_bindless_materials",
+        kind: BindGroupVariableType::Storage,
+    },
+];
 
 impl GPUState for BindlessState {
     fn reserved_names() -> &'static [&'static str] {
@@ -217,6 +245,22 @@ impl BindlessState {
 
         let names = BINDLESS_STATE_NAMES;
         reserved.insert(names[0].to_string(), Box::new(ReservedTiming::new(ctx)));
+        reserved.insert(
+            names[1].to_string(),
+            Box::new(ReservedBindlessCamera::new(ctx)),
+        );
+        reserved.insert(
+            names[2].to_string(),
+            Box::new(ReservedBindlessTextures::new(ctx)),
+        );
+        reserved.insert(
+            names[3].to_string(),
+            Box::new(ReservedBindlessTransformations::new(ctx)),
+        );
+        reserved.insert(
+            names[4].to_string(),
+            Box::new(ReservedBindlessMaterials::new(ctx)),
+        );
 
         Self {
             reserved,

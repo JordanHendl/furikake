@@ -1,9 +1,16 @@
 use glam::{Mat4, Quat, Vec3};
 
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub struct Camera {
     pub position: Vec3,
     pub rotation: Quat,
+}
+
+impl Default for Camera {
+    fn default() -> Self {
+        Self::new(Vec3::ZERO, Quat::IDENTITY)
+    }
 }
 
 impl Camera {
@@ -49,4 +56,30 @@ impl Camera {
     pub fn up(&self) -> Vec3 {
         self.rotation * Vec3::Y
     }
+}
+
+#[repr(C)]
+#[derive(Clone, Copy, Default)]
+pub struct Transformation {
+    pub transform: Mat4,
+}
+
+#[repr(C)]
+#[derive(Clone, Copy, Default)]
+pub struct Texture {
+    pub id: u32,
+    pub width: u32,
+    pub height: u32,
+    pub mip_levels: u32,
+}
+
+#[repr(C)]
+#[derive(Clone, Copy, Default)]
+pub struct Material {
+    pub base_color_texture_id: u16,
+    pub normal_texture_id: u16,
+    pub metallic_roughness_texture_id: u16,
+    pub occlusion_texture_id: u16,
+    pub emissive_texture_id: u16,
+    pub _padding: u16,
 }
