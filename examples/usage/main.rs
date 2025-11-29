@@ -75,7 +75,7 @@ fn main() {
             },
         )
         .expect("compile fragment shader");
-    
+
     for v in &vert_result.variables {
         println!("{} name", v.name);
     }
@@ -105,7 +105,11 @@ fn main() {
     let mut bind_groups: [Option<Handle<BindGroup>>; 4] = [None, None, None, None];
 
     for mut recipe in bg_recipes.drain(..) {
-        let set = recipe.bindings.first().map(|b| b.var.set as usize).unwrap_or(0);
+        let set = recipe
+            .bindings
+            .first()
+            .map(|b| b.var.set as usize)
+            .unwrap_or(0);
 
         if set < bg_layouts.len() {
             bg_layouts[set] = Some(recipe.layout);

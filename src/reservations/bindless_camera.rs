@@ -1,10 +1,8 @@
+#![allow(dead_code)]
+
 use std::ptr::NonNull;
 
-use dashi::{
-    BindGroupVariable, BindingInfo, Buffer, BufferInfo, BufferView, Context, Handle,
-    IndexedBindingInfo, IndexedResource, ShaderResource,
-};
-use glam::Mat4;
+use dashi::{BufferInfo, Context, Handle, IndexedBindingInfo, IndexedResource, ShaderResource};
 
 use crate::types::Camera;
 
@@ -26,7 +24,7 @@ impl ReservedBindlessCamera {
         let available: Vec<u16> = (0..START_SIZE as u16).collect();
 
         for i in 0..START_SIZE {
-            let default = [Mat4::IDENTITY];
+            let default = [Camera::default()];
             let buf = ctx
                 .make_buffer(&BufferInfo {
                     debug_name: &format!("[FURIKAKE] Bindless Camera {}", i),
@@ -64,7 +62,7 @@ impl ReservedBindlessCamera {
             let start = self.host_camera_data.len();
             let end = start + EXTENSION_SIZE;
             for i in start..end {
-                let default = [Mat4::IDENTITY];
+                let default = [Camera::default()];
                 let buf = ctx
                     .make_buffer(&BufferInfo {
                         debug_name: &format!("[FURIKAKE] Bindless Camera {}", i),
@@ -119,8 +117,8 @@ impl ReservedItem for ReservedBindlessCamera {
         "meshi_bindless_camera".to_string()
     }
 
-    fn update(&mut self, ctx: &mut Context) -> Result<(), crate::error::FurikakeError> {
-        todo!()
+    fn update(&mut self, _ctx: &mut Context) -> Result<(), crate::error::FurikakeError> {
+        Ok(())
     }
 
     fn binding(&self) -> ReservedBinding<'_> {
@@ -136,5 +134,46 @@ impl ReservedItem for ReservedBindlessCamera {
 
     fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
         self
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use dashi::{Context, ContextInfo};
+    use glam::{Quat, Vec3};
+
+    #[test]
+    fn reuses_released_camera_slots() {
+        let mut ctx = Context::headless(&ContextInfo::default()).expect("create context");
+        let mut cameras = ReservedBindlessCamera::new(&mut ctx);
+
+        let first = cameras.add_camera();
+        let second = cameras.add_camera();
+        assert_ne!(first.slot, second.slot);
+
+        cameras.remove_camera(first);
+        let reused = cameras.add_camera();
+
+        assert_eq!(first.slot, reused.slot);
+    }
+
+    #[test]
+    fn mutates_host_camera_data() {
+        let mut ctx = Context::headless(&ContextInfo::default()).expect("create context");
+        let mut cameras = ReservedBindlessCamera::new(&mut ctx);
+
+        let handle = cameras.add_camera();
+        {
+            let cam = cameras.camera_mut(handle);
+            cam.position = Vec3::new(1.0, 2.0, 3.0);
+            cam.rotation = Quat::from_rotation_y(1.0);
+        }
+
+        cameras.update(&mut ctx).expect("update cameras");
+
+        let cam = cameras.camera(handle);
+        assert_eq!(cam.position, Vec3::new(1.0, 2.0, 3.0));
+        assert_eq!(cam.rotation, Quat::from_rotation_y(1.0));
     }
 }
