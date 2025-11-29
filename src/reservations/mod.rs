@@ -1,3 +1,4 @@
+pub mod bindless_camera;
 pub mod camera;
 pub mod timing;
 pub use timing::*;

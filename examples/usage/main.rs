@@ -22,13 +22,13 @@ fn main() {
         layout(location = 1) in vec3 in_color;
         layout(location = 0) out vec3 v_color;
 
-        layout(binding = 0) uniform meshi_timing {
+        layout(binding = 0) uniform timing{
             float current_time_ms;
             float frame_time_ms;
-        } timing;
+        } meshi_timing;
 
         void main() {
-            v_color = in_color + vec3(sin(timing.current_time_ms * 0.001));
+            v_color = in_color + vec3(sin(meshi_timing.current_time_ms * 0.001));
             gl_Position = vec4(in_pos, 0.0, 1.0);
         }
     "#;
@@ -38,13 +38,13 @@ fn main() {
         layout(location = 0) in vec3 v_color;
         layout(location = 0) out vec4 out_color;
 
-        layout(binding = 0) uniform meshi_timing {
+        layout(binding = 0) uniform timing{
             float current_time_ms;
             float frame_time_ms;
-        } timing;
+        } meshi_timing;
 
         void main() {
-            float fade = clamp(timing.frame_time_ms * 0.01, 0.0, 1.0);
+            float fade = clamp(meshi_timing.frame_time_ms * 0.01, 0.0, 1.0);
             out_color = vec4(mix(v_color, vec3(0.2, 0.3, 0.4), fade), 1.0);
         }
     "#;
@@ -57,8 +57,8 @@ fn main() {
                 name: Some("usage_example_vert".to_string()),
                 lang: ShaderLang::Glsl,
                 stage: dashi::ShaderType::Vertex,
-                optimization: OptimizationLevel::Performance,
-                debug_symbols: false,
+                optimization: OptimizationLevel::None,
+                debug_symbols: true,
             },
         )
         .expect("compile vertex shader");
@@ -70,12 +70,15 @@ fn main() {
                 name: Some("usage_example_frag".to_string()),
                 lang: ShaderLang::Glsl,
                 stage: dashi::ShaderType::Fragment,
-                optimization: OptimizationLevel::Performance,
-                debug_symbols: false,
+                optimization: OptimizationLevel::None,
+                debug_symbols: true,
             },
         )
         .expect("compile fragment shader");
-
+    
+    for v in &vert_result.variables {
+        println!("{} name", v.name);
+    }
     let mut state = DefaultState::new(&mut ctx);
     let shaders = vec![vert_result, frag_result];
 
