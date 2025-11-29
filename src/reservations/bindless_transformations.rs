@@ -8,7 +8,7 @@ use crate::types::Transformation;
 
 use super::{ReservedBinding, ReservedItem};
 
-pub(crate) struct ReservedBindlessTransformations {
+pub struct ReservedBindlessTransformations {
     ctx: NonNull<Context>,
     device_transformation_data: Vec<IndexedResource>,
     host_transformation_data: Vec<NonNull<Transformation>>,

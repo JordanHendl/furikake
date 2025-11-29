@@ -8,7 +8,7 @@ use crate::types::Material;
 
 use super::{ReservedBinding, ReservedItem};
 
-pub(crate) struct ReservedBindlessMaterials {
+pub struct ReservedBindlessMaterials {
     ctx: NonNull<Context>,
     device_material_data: Vec<IndexedResource>,
     host_material_data: Vec<NonNull<Material>>,

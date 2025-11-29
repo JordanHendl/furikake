@@ -8,7 +8,7 @@ use crate::types::Camera;
 
 use super::{ReservedBinding, ReservedItem};
 
-pub(crate) struct ReservedBindlessCamera {
+pub struct ReservedBindlessCamera {
     ctx: NonNull<Context>,
     device_camera_data: Vec<IndexedResource>,
     host_camera_data: Vec<NonNull<Camera>>,
