@@ -8,7 +8,7 @@ use crate::types::Texture;
 
 use super::{ReservedBinding, ReservedItem};
 
-pub(crate) struct ReservedBindlessTextures {
+pub struct ReservedBindlessTextures {
     ctx: NonNull<Context>,
     device_texture_data: Vec<IndexedResource>,
     host_texture_data: Vec<NonNull<Texture>>,
